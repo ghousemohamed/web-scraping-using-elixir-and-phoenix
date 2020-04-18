@@ -44,7 +44,9 @@ defmodule Getcheck.MixProject do
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
       {:phoenix_live_view, github: "phoenixframework/phoenix_live_view"},
-      {:floki, ">= 0.0.0", only: :test}
+      {:floki, ">= 0.0.0"},
+      {:httpoison, "~> 1.4", [env: :prod, hex: "httpoison", repo: "hexpm", optional: false]},
+      {:crawly, "~> 0.1"}
     ]
   end
 

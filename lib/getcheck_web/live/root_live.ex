@@ -97,9 +97,8 @@ defmodule GetcheckWeb.RootLive do
   end
 
   def mount(_params, _session, socket) do
-    icici_data = Esl.fetch_icici()
-    iob_data = Esl.fetch_iob()
-    {:ok, assign(socket, icici_data: icici_data, iob_data: iob_data)}
+    Esl.fd_iob()
+    {:ok, assign(socket, icici_data: [[]], iob_data: [[]])}
   end
 
 end

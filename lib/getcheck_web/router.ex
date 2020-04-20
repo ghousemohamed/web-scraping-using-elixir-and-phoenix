@@ -10,6 +10,10 @@ defmodule GetcheckWeb.Router do
     plug :put_root_layout, {GetcheckWeb.LayoutView, :root}
   end
 
+  pipeline :test do
+    plug :put_root_layout, {GetcheckWeb.LayoutView, :root}
+  end
+
   pipeline :api do
     plug :accepts, ["json"]
   end
@@ -18,7 +22,10 @@ defmodule GetcheckWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :index
+
+    pipe_through :test
     live "/live", RootLive
+    live "/test", UserLive.Index, :index
   end
 
   # Other scopes may use custom stacks.

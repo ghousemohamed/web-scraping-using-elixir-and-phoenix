@@ -7,13 +7,15 @@ defmodule Getcheck.Application do
 
   def start(_type, _args) do
     # List all child processes to be supervised
+    import Supervisor.Spec
     children = [
       # Start the Ecto repository
       Getcheck.Repo,
       # Start the endpoint when the application starts
-      GetcheckWeb.Endpoint
+      GetcheckWeb.Endpoint,
       # Starts a worker by calling: Getcheck.Worker.start_link(arg)
       # {Getcheck.Worker, arg},
+      worker(Getcheck.Cron, []),
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

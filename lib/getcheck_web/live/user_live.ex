@@ -17,7 +17,7 @@ defmodule GetcheckWeb.UserLive.Index do
   end
 
   def mount(_params, _session, socket) do
-    Esl.fd_pnb()
+    Esl.fd_hdfc()
     {:ok, assign(socket, value: "Hello World")}
   end
 

@@ -9,6 +9,41 @@ defmodule GetcheckWeb.Esl do
   def parse_item(_response) do
     %Crawly.ParsedItem{:items => [], :requests => []}
   end
+
+  def init_refresh() do
+    map_of_fd_rates = %{
+      "IOB" => fd_iob(),
+      "ICICI" => fd_icici(),
+      "HDFC" => fd_hdfc(),
+      "HSBC" =>	fd_hsbc(),
+      "SBI" => fd_sbi(),
+      "Kotak Bank" =>	fd_kotak(),
+      "CitiBank" => fd_citibank(),
+      "Canara Bank" => fd_canara(),
+      "Karur Vysya Bank" => fd_kvb(),
+      "IndusInd Bank" => fd_indusind(),
+      "Bank of India" => fd_bank_of_india(),
+      "Bank of Baroda" =>	fd_bank_of_baroda(),
+      "IDBI Bank" => fd_idbi(),
+      "Yes Bank" => fd_yes_bank(),
+      "Syndicate Bank" =>	fd_syndicate(),
+      "Central Bank of India" => fd_central_bank_of_india(),
+      "Union Bank of India" => fd_union_bank_of_india(),
+      "Standard Chartered Bank" => fd_standard_chartered_bank(),
+      "Federal Bank" =>  fd_federal_bank(),
+      "Dhanalakshmi Bank" => fd_dhanalakshmi_bank(),
+      "Nainital Bank" => fd_nainital_bank(),
+      "South Indian Bank" => fd_south_indian_bank(),
+      "J&K Bank" => fd_jk_bank(),
+      "City Union Bank" => fd_city_union_bank(),
+      "Andhra Bank" => fd_andhra_bank(),
+      "Punjab and Sind Bank" => fd_punjab_and_sind_bank(),
+      "Allahabad Bank" => fd_allahabad_bank(),
+      "Corporation Bank" => fd_corp_bank(),
+      "Punjab National Bank" => fd_pnb(),
+      "UCO Bank" => fd_uco_bank(),
+    }
+  end
   
   def fd_iob() do
     response = Crawly.fetch(@urls["IOB"])
@@ -248,17 +283,107 @@ defmodule GetcheckWeb.Esl do
     IO.inspect(data)
   end
 
+  def fd_yes_bank() do
+    response = Crawly.fetch(@urls["Yes Bank"])
+    {:ok, document} = Floki.parse_document(response.body)   
+    data = Enum.map(5..10, fn(index) ->
+      Enum.map(1..5, fn(inner_index) ->
+        Floki.find(document, "table tr:nth-child(#{index}) td:nth-child(#{inner_index})") |> Floki.text
+      end)
+    end)
+    data = data ++ 
+    Enum.map(13..15, fn(index) ->
+      Enum.map(1..5, fn(inner_index) ->
+        Floki.find(document, "table tr:nth-child(#{index}) td:nth-child(#{inner_index})") |> Floki.text
+      end)
+    end)
+    IO.inspect(data)
+  end
+
+  def fd_idbi() do
+    {:ok, response} = HTTPoison.get(@urls["IDBI Bank"], [], [ssl: [{:verify, :verify_none}]])
+    {:ok, document} = Floki.parse_document(response.body)
+    data = Enum.map(4..20, fn(index) ->
+      Enum.map(1..3, fn(inner_index) ->
+        Floki.find(document, "td.content.mystyle table.content.mystyle tr:nth-child(#{index}) td:nth-child(#{inner_index})") |> Floki.text
+      end)
+    end)
+    data = data ++ [Enum.map(1..3, fn(inner_index) ->
+        Floki.find(document, "td.content.mystyle table.content.mystyle tr:nth-child(22) td:nth-child(#{inner_index})") |> Floki.text
+      end)]
+    IO.inspect(data)
+  end
+
+  def fd_bank_of_baroda() do
+    #Below 2cr
+    response = Crawly.fetch(@urls["Bank of Baroda"])
+    {:ok, document} = Floki.parse_document(response.body)
+    data = Enum.map(1..13, fn(index) ->
+      Enum.map(1..2, fn(inner_index) ->
+        class_of_rows = Floki.find(document, "table:nth-child(2) tbody tr:nth-child(#{index}) td:nth-child(#{inner_index})")
+        first_row = List.first(class_of_rows)
+        Floki.text(first_row)
+      end)
+    end)
+    IO.inspect(data)
+  end
+
+  def fd_dhanalakshmi_bank() do
+    response = Crawly.fetch(@urls["Dhanalakshmi Bank"])
+    {:ok, document} = Floki.parse_document(response.body)
+    data = Enum.map(3..7, fn(index) ->
+      Enum.map(1..2, fn(inner_index) ->
+        Floki.find(document, "table:nth-child(9) tr:nth-child(#{index}) td:nth-child(#{inner_index})") |> Floki.text
+      end)
+    end)
+    data = data ++ Enum.map(2..6, fn(index) ->
+      Enum.map(1..2, fn(inner_index) ->
+        Floki.find(document, "table:nth-child(12) tr:nth-child(#{index}) td:nth-child(#{inner_index})") |> Floki.text
+      end)
+    end)
+    IO.inspect(data)
+  end
+
   #Pending
   def fd_hdfc() do
-    IO.inspect(@urls.hello)
-    # response = Crawly.fetch("https://www.hdfcbank.com/personal/resources/rates")
-    # {:ok, document} = Floki.parse_document(response.body)
+    response = Crawly.fetch(@urls["HDFC"])
+    {:ok, document} = Floki.parse_document(response.body)
     # data = Enum.map(1..50, fn(index) ->
     #   Enum.map(1..5, fn(inner_index) ->
-    #     Floki.find(document, "table tbody tr:nth-child(#{index}) td:nth-child(#{inner_index})") |> Floki.text
+    #     
     #   end)
     # end)
-    # IO.inspect(data)
+    data = Floki.find(document, "table.rates-table-main:nth-child(1) tr:nth-child(14) td:nth-child(1)")
+    IO.inspect(data)
+  end
+
+  #Pending (Link Broken?)
+  def fd_kvb() do
+    {:ok, response} = HTTPoison.get(@urls["Karur Vysya Bank"], [], [ssl: [{:verify, :verify_none}]])
+    {:ok, document} = Floki.parse_document(response.body)
+    data = Floki.find(document, "h4") |> Floki.text
+    IO.inspect(data)
+  end
+
+  #Pending (Premature withdrawal allowed and not allowed)
+  def fd_kotak() do
+    response = Crawly.fetch(@urls["Kotak Bank"])
+    {:ok, document} = Floki.parse_document(response.body)
+    # data = Floki.find(document, "table tr:nth-child(1) td:nth-child(1)") |> Floki.text  
+    data = Floki.find(document, "table")
+    IO.inspect(data) 
+  end
+
+  #pending (Issue with how output is organized)
+  def fd_citibank() do
+    response = Crawly.fetch(@urls["CitiBank"])
+    {:ok, document} = Floki.parse_document(response.body)
+    data = Enum.map(3..10, fn(index) ->
+      Enum.map(1..10, fn(inner_index) ->
+        Floki.find(document, "table.clsTable.clsTableFont.dropshadow.rounded.tabpad tbody tr:nth-child(#{index}) td:nth-child(#{inner_index})") |> Floki.text 
+      end)
+    end)
+    IO.inspect(data)
   end
 
   #Pending
@@ -269,73 +394,4 @@ defmodule GetcheckWeb.Esl do
     IO.inspect(data)
   end
 
-  #Pending
-  def fd_dhanalakshmi_bank() do
-    response = Crawly.fetch("https://www.dhanbank.com/header/interest_rates.aspx")
-    {:ok, document} = Floki.parse_document(response.body)
-    data = Enum.map(3..9, fn(index) ->
-      Enum.map(1..2, fn(inner_index) ->
-        Floki.find(document, "table:nth-child(9) tr:nth-child(#{index}) td:nth-child(#{inner_index})") |> Floki.text
-      end)
-    end)
-    IO.inspect(data)
-  end
-
-  #Pending
-  def fd_yes_bank() do
-    response = Crawly.fetch("https://www.yesbank.in/personal-banking/yes-individual/deposits/fixed-deposit-residents")
-    {:ok, document} = Floki.parse_document(response.body)   
-    IO.inspect(document) 
-    data = Floki.find(document, "#wrapper > div:nth-child(10) > div > div:nth-child(6) > table > tbody > tr:nth-child(5) > td:nth-child(1)") |> Floki.text
-    IO.inspect(data)
-  end
-
-  #Pending
-  def fd_idbi() do
-    response = Crawly.fetch("https://www.idbibank.in/interest-rates.asp/")
-    {:ok, document} = Floki.parse_document(response.body)
-    IO.inspect(document)
-  end
-
-  #Pending
-  def fd_bank_of_baroda() do
-    #Below 2cr
-    response = Crawly.fetch("https://www.bankofbaroda.in/interest-rates-charges.htm")
-    {:ok, document} = Floki.parse_document(response.body)
-    data = Floki.find(document, "table.tableData.intresrateTwoCol tbody tr:nth-child(1) td:nth-child(1) ")
-    IO.inspect(data)
-    # data = Floki.find(document, "") |> Floki.text
-    # IO.inspect(data)
-    # "#tab-1 > div:nth-child(2) > table > tbody > tr:nth-child(1) > td:nth-child(1)"
-    #Above 2cr
-    #Above 10cr
-  end
-
-  #Pending
-  def fd_kvb() do
-    response = Crawly.fetch("https://www.kvb.co.in/interest-rates/resident-nro-deposits")
-    {:ok, document} = Floki.parse_document(response.body)
-    IO.inspect(document)
-    data = Floki.find(document, "table.table.table-bordered") |> Floki.text
-    IO.inspect(data)
-  end
-
-  #Pending
-  def fd_kotak() do
-    response = Crawly.fetch("http://www.kotak.com/bank/common/allrates.htm")
-    {:ok, document} = Floki.parse_document(response.body)
-    # data = Floki.find(document, "table tr:nth-child(1) td:nth-child(1)") |> Floki.text  
-    data = Floki.find(document, "table tbody tr:nth-child(2) td table:nth-child(3) tbody tr:nth-child(4) td:nth-child(1)") |> Floki.text 
-    data = Floki.find(document, "") |> Floki.text 
-    IO.inspect(data) 
-  end
-
-  #Pending
-  def fd_citibank() do
-    response = Crawly.fetch("https://www.online.citibank.co.in/products-services/investments/deposits/deposits.htm")
-    {:ok, document} = Floki.parse_document(response.body)
-    data = Floki.find(document, " div.tabContentWrap > div.tabContent.active_content > div:nth-child(3) > div > div > div > table > tbody > tr:nth-child(1) > td:nth-child(2)") |> Floki.text 
-    IO.inspect(data)
-  end
-  
 end
